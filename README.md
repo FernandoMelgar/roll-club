@@ -1,5 +1,7 @@
 # Roll Club
 
+<img width="1351" height="894" alt="Screenshot 2026-10-19 at 4 52 00 p m" src="https://github.com/user-attachments/assets/ca185343-cace-4c90-893a-bc9728fcaea4" />
+
 A small, responsive dice roller with D6 and D20 dice, animated 3D graphics, sound, session history, and stats.
 
 ## Run it
