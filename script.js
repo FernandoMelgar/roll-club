@@ -5,21 +5,26 @@
   const STORAGE_KEY = "roll-club-v1";
   const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
 
+  /*
+   * Each rotation brings the rolled face onto the top of the cube.
+   * The camera then looks down at the table so the result is always the
+   * face staring back at the player.
+   */
   const FACE_ROTATIONS = {
-    1: { x: 0, y: 0 },
-    2: { x: -90, y: 0 },
-    3: { x: 0, y: -90 },
-    4: { x: 0, y: 90 },
-    5: { x: 90, y: 0 },
-    6: { x: 0, y: 180 }
+    1: { x: 90, y: 0, z: 0 },
+    2: { x: 0, y: 0, z: 0 },
+    3: { x: 0, y: 0, z: -90 },
+    4: { x: 0, y: 0, z: 90 },
+    5: { x: 180, y: 0, z: 0 },
+    6: { x: -90, y: 0, z: 0 }
   };
 
   /*
    * This must stay in sync with .die-camera in styles.css.
-   * The outer camera angle shows the selected face plus the top and right
-   * faces, like a die photographed on a table.
+   * The camera looks down from above, making the top face the largest
+   * visible plane while the front and side planes provide depth.
    */
-  const VIEW_ROTATION = { x: -20, y: -18, z: 0 };
+  const VIEW_ROTATION = { x: -62, y: -20, z: 0 };
 
   const FACE_NORMALS = {
     front: [0, 0, 1],
@@ -196,7 +201,7 @@
     const target = FACE_ROTATIONS[value];
     const rotateX = target.x + spins.x * 360;
     const rotateY = target.y + spins.y * 360;
-    const rotateZ = spins.z * 360 + tilt;
+    const rotateZ = target.z + spins.z * 360 + tilt;
 
     return `rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`;
   }
@@ -245,7 +250,7 @@
       const cubeNormal = rotateVector(normal, {
         x: target.x,
         y: target.y,
-        z: tilt
+        z: target.z + tilt
       });
       const viewNormal = rotateVector(cubeNormal, VIEW_ROTATION);
       const light =
@@ -255,6 +260,15 @@
 
       const shade = clamp(0.2 - Math.max(0, light) * 0.19, 0.015, 0.2);
       face.style.setProperty("--face-shade", shade.toFixed(3));
+    });
+  }
+
+  function markResultFace(die, value) {
+    die.querySelectorAll(".die-face").forEach((face) => {
+      face.classList.toggle(
+        "is-result",
+        Number(face.dataset.value) === value
+      );
     });
   }
 
@@ -298,6 +312,7 @@
     die.dataset.tiltZ = String(tilt);
     die.style.transform = dieTransform(1, { x: 0, y: 0, z: 0 }, tilt);
     updateFaceShading(die, 1);
+    markResultFace(die, 1);
 
     camera.appendChild(die);
     hop.appendChild(camera);
@@ -634,6 +649,7 @@
     const dice = Array.from(elements.diceSet.querySelectorAll(".die"));
 
     dice.forEach((die, index) => {
+      markResultFace(die, null);
       const spins = {
         x: 2 + randomInt(2),
         y: 2 + randomInt(2),
@@ -667,6 +683,7 @@
 
     Array.from(elements.diceSet.querySelectorAll(".die")).forEach((die, index) => {
       updateFaceShading(die, values[index]);
+      markResultFace(die, values[index]);
     });
 
     elements.total.textContent = String(total);

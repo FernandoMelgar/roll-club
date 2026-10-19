@@ -16,7 +16,7 @@ Then visit [http://localhost:8000](http://localhost:8000).
 ## Features
 
 - Roll 1–6 dice with a fair, crypto-backed random number generator
-- True 3D six-face dice with a studio camera angle, face-aware shading, pips, and contact shadows
+- True 3D six-face dice that land with the rolled result on top, with a top-down studio camera, face-aware shading, and contact shadows
 - Running total plus per-die results
 - Session history and roll stats, saved in `localStorage`
 - Optional sound effects with a mute toggle

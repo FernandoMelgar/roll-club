@@ -628,7 +628,7 @@ h1 em {
   height: 100%;
   transform-style: preserve-3d;
   /* Keep this angle in sync with VIEW_ROTATION in script.js. */
-  transform: rotateX(-20deg) rotateY(-18deg);
+  transform: rotateX(-62deg) rotateY(-20deg);
 }
 
 .dice-stage.is-entering .die-hop {
@@ -741,7 +741,7 @@ h1 em {
     0 2px 4px rgba(76, 50, 24, 0.17);
 }
 
-.die-face[data-value="1"] .pip {
+.die-face.is-result[data-value="1"] .pip {
   width: 86%;
   background: radial-gradient(circle at 34% 26%, #ffac92 0%, #ef5b36 48%, #b62e0f 100%);
   box-shadow:
