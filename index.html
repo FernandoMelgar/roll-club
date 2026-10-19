@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f4eee4">
+  <meta name="description" content="Roll Club is a playful, responsive dice roller. Pick one to six dice, roll, and keep track of your session.">
+  <title>Roll Club — Let luck roll.</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23191612'/%3E%3Ccircle cx='20' cy='20' r='5' fill='%23fdf8ee'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23f15a35'/%3E%3Ccircle cx='44' cy='44' r='5' fill='%23fdf8ee'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Roll Club home">
+        <span class="brand-mark" aria-hidden="true">
+          <span class="brand-pip brand-pip--a"></span>
+          <span class="brand-pip brand-pip--b"></span>
+          <span class="brand-pip brand-pip--c"></span>
+        </span>
+        <span class="brand-name">Roll Club</span>
+      </a>
+
+      <div class="top-actions">
+        <button class="icon-btn" id="soundToggle" type="button" aria-label="Mute sound effects" aria-pressed="true" title="Sound effects">
+          <svg class="sound-on-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 9.25h3.25L12 5.5v13L7.25 14.75H4v-5.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            <path d="M15.5 9a4.2 4.2 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+          <svg class="sound-off-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M4 9.25h3.25L12 5.5v13L7.25 14.75H4v-5.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/>
+            <path d="m16 9.5 5 5m0-5-5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <button class="reset-btn" id="resetBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M5 8.5A8 8 0 1 1 4.7 15" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M5 4v4.5h4.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          <span class="reset-text">Reset</span>
+        </button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" aria-labelledby="pageTitle">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>A little chaos, on demand</p>
+          <h1 id="pageTitle">Let luck <em>roll.</em></h1>
+        </div>
+        <p class="lede">Pick your dice, give them a shake, and see what chance has planned. No stakes&nbsp;— just a little serendipity.</p>
+      </section>
+
+      <div class="content-grid">
+        <section class="table-card" aria-labelledby="tableTitle">
+          <div class="board-header">
+            <div>
+              <p class="board-kicker">The dice table</p>
+              <h2 id="tableTitle">Feeling lucky?</h2>
+            </div>
+            <div class="board-tools">
+              <div class="status" id="status" data-state="ready">
+                <span class="status-dot" aria-hidden="true"></span>
+                <span id="statusText">Ready</span>
+              </div>
+              <button class="fullscreen-btn" id="fullscreenBtn" type="button" aria-label="Enter full screen" aria-pressed="false" title="Full screen">
+                <svg class="fs-enter" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <svg class="fs-exit" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="dice-stage" id="diceStage" data-count="1" aria-hidden="true">
+            <div class="dice-set" id="diceSet"></div>
+            <span class="stage-stamp" aria-hidden="true">D6</span>
+          </div>
+
+          <div class="result-bar">
+            <div class="total-block">
+              <span class="total-label">Total</span>
+              <strong class="total" id="total">—</strong>
+            </div>
+            <p class="breakdown" id="breakdown">Your roll will land here.</p>
+          </div>
+
+          <div class="board-actions">
+            <div class="dice-control">
+              <span class="control-label" id="diceControlLabel">Dice</span>
+              <div class="stepper" role="group" aria-labelledby="diceControlLabel">
+                <button class="stepper-btn" id="decreaseBtn" type="button" aria-label="Remove a die" disabled>
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5.5 10h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+                <output class="dice-count" id="diceCount" aria-live="polite" aria-atomic="true"><span id="diceNumber">1</span><span class="dice-word" id="diceWord">die</span></output>
+                <button class="stepper-btn" id="increaseBtn" type="button" aria-label="Add a die">
+                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 5.5v9M5.5 10h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <button class="roll-btn" id="rollBtn" type="button">
+              <span id="rollLabel">Roll dice</span>
+              <svg class="roll-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <rect x="3.25" y="3.25" width="17.5" height="17.5" rx="5" stroke="currentColor" stroke-width="1.7"/>
+                <circle cx="8.2" cy="8.2" r="1.25" fill="currentColor"/>
+                <circle cx="15.8" cy="15.8" r="1.25" fill="currentColor"/>
+                <circle cx="12" cy="12" r="1.25" fill="currentColor"/>
+              </svg>
+            </button>
+          </div>
+        </section>
+
+        <aside class="rail" aria-label="Session details">
+          <section class="panel stats-card" aria-labelledby="statsTitle">
+            <div class="panel-heading">
+              <h2 id="statsTitle">This session</h2>
+              <span class="live-tag"><span aria-hidden="true"></span>Live</span>
+            </div>
+            <div class="stats">
+              <div class="stat">
+                <span class="stat-label">Rolls</span>
+                <strong id="statRolls">0</strong>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Average</span>
+                <strong id="statAverage">—</strong>
+              </div>
+              <div class="stat">
+                <span class="stat-label">High</span>
+                <strong id="statHigh">—</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel history-card" aria-labelledby="historyTitle">
+            <div class="panel-heading">
+              <h2 id="historyTitle">Recent rolls</h2>
+              <span class="panel-count" id="historyCount">0</span>
+            </div>
+            <div class="history" id="history">
+              <div class="empty-history">
+                <span class="empty-die" aria-hidden="true">
+                  <span></span><span></span><span></span>
+                </span>
+                <p>Nothing yet.</p>
+                <span>Your rolls will land here.</span>
+              </div>
+            </div>
+          </section>
+
+          <aside class="fact-card" aria-label="Lucky little fact">
+            <span class="fact-number" aria-hidden="true">07</span>
+            <div>
+              <p class="fact-label">Lucky little fact</p>
+              <p>Opposite faces of a standard die always add up to <strong>seven</strong>.</p>
+            </div>
+          </aside>
+        </aside>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <p>Six dice. Infinite outcomes.</p>
+      <p class="shortcut"><span>Press</span> <kbd>Space</kbd> <span>to roll</span></p>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite">Session cleared. Roll away.</div>
+  <p class="sr-only" id="liveRegion" role="status" aria-live="polite"></p>
+
+  <script src="script.js"></script>
+</body>
+</html>
