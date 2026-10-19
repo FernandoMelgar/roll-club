@@ -14,7 +14,23 @@
     6: { x: 0, y: 180 }
   };
 
-  const FACE_TILT = { x: -7, y: 9 };
+  /*
+   * This must stay in sync with .die-camera in styles.css.
+   * The outer camera angle shows the selected face plus the top and right
+   * faces, like a die photographed on a table.
+   */
+  const VIEW_ROTATION = { x: -20, y: -18, z: 0 };
+
+  const FACE_NORMALS = {
+    front: [0, 0, 1],
+    back: [0, 0, -1],
+    right: [1, 0, 0],
+    left: [-1, 0, 0],
+    top: [0, -1, 0],
+    bottom: [0, 1, 0]
+  };
+
+  const LIGHT_DIRECTION = normalizeVector([-0.35, -0.65, 0.72]);
 
   const FACE_LAYOUT = [
     ["front", 1],
@@ -82,7 +98,6 @@
   let enterTimer = null;
   let statusTimer = null;
   let toastTimer = null;
-  let landTimer = null;
   let fullscreenTimer = null;
   let audioContext = null;
   const randomBuffer = new Uint32Array(1);
@@ -179,11 +194,68 @@
 
   function dieTransform(value, spins, tilt) {
     const target = FACE_ROTATIONS[value];
-    const rotateX = target.x + FACE_TILT.x + spins.x * 360;
-    const rotateY = target.y + FACE_TILT.y + spins.y * 360;
+    const rotateX = target.x + spins.x * 360;
+    const rotateY = target.y + spins.y * 360;
     const rotateZ = spins.z * 360 + tilt;
 
     return `rotateX(${rotateX}deg) rotateY(${rotateY}deg) rotateZ(${rotateZ}deg)`;
+  }
+
+  function normalizeVector([x, y, z]) {
+    const length = Math.hypot(x, y, z) || 1;
+    return [x / length, y / length, z / length];
+  }
+
+  /*
+   * CSS applies transform functions from right to left to the local vector,
+   * so rotateZ is applied first, then rotateY, then rotateX.
+   */
+  function rotateVector([x, y, z], rotations) {
+    const rad = Math.PI / 180;
+    const cx = Math.cos(rotations.x * rad);
+    const sx = Math.sin(rotations.x * rad);
+    const cy = Math.cos(rotations.y * rad);
+    const sy = Math.sin(rotations.y * rad);
+    const cz = Math.cos(rotations.z * rad);
+    const sz = Math.sin(rotations.z * rad);
+
+    let rotatedX = x * cz - y * sz;
+    let rotatedY = x * sz + y * cz;
+    let rotatedZ = z;
+
+    const yawedX = rotatedX * cy + rotatedZ * sy;
+    rotatedZ = -rotatedX * sy + rotatedZ * cy;
+    rotatedX = yawedX;
+
+    const pitchedY = rotatedY * cx - rotatedZ * sx;
+    rotatedZ = rotatedY * sx + rotatedZ * cx;
+    rotatedY = pitchedY;
+
+    return [rotatedX, rotatedY, rotatedZ];
+  }
+
+  function updateFaceShading(die, value) {
+    const tilt = Number(die.dataset.tiltZ) || 0;
+    const target = FACE_ROTATIONS[value];
+
+    die.querySelectorAll(".die-face").forEach((face) => {
+      const normal = FACE_NORMALS[face.dataset.position];
+      if (!normal) return;
+
+      const cubeNormal = rotateVector(normal, {
+        x: target.x,
+        y: target.y,
+        z: tilt
+      });
+      const viewNormal = rotateVector(cubeNormal, VIEW_ROTATION);
+      const light =
+        viewNormal[0] * LIGHT_DIRECTION[0] +
+        viewNormal[1] * LIGHT_DIRECTION[1] +
+        viewNormal[2] * LIGHT_DIRECTION[2];
+
+      const shade = clamp(0.2 - Math.max(0, light) * 0.19, 0.015, 0.2);
+      face.style.setProperty("--face-shade", shade.toFixed(3));
+    });
   }
 
   /* Dice rendering */
@@ -193,6 +265,15 @@
     slot.className = "die-slot";
     slot.style.setProperty("--i", String(index));
 
+    const shadow = document.createElement("div");
+    shadow.className = "die-shadow";
+
+    const hop = document.createElement("div");
+    hop.className = "die-hop";
+
+    const camera = document.createElement("div");
+    camera.className = "die-camera";
+
     const die = document.createElement("div");
     die.className = "die";
 
@@ -200,6 +281,7 @@
       const face = document.createElement("div");
       face.className = `die-face face-${position}`;
       face.dataset.value = String(value);
+      face.dataset.position = position;
 
       PIPS[value].forEach(([row, column]) => {
         const pip = document.createElement("span");
@@ -212,10 +294,14 @@
       die.appendChild(face);
     });
 
-    die.style.transform = dieTransform(1, { x: 0, y: 0, z: 0 }, randomTilt());
-    die.querySelector('.die-face[data-value="1"]').classList.add("is-showing");
-    die.classList.add("is-settled");
-    slot.appendChild(die);
+    const tilt = randomTilt();
+    die.dataset.tiltZ = String(tilt);
+    die.style.transform = dieTransform(1, { x: 0, y: 0, z: 0 }, tilt);
+    updateFaceShading(die, 1);
+
+    camera.appendChild(die);
+    hop.appendChild(camera);
+    slot.append(shadow, hop);
 
     return { slot, die };
   }
@@ -241,7 +327,7 @@
 
     enterTimer = window.setTimeout(() => {
       elements.diceStage.classList.remove("is-entering");
-    }, 760);
+    }, 920);
   }
 
   /* Interface updates */
@@ -526,7 +612,6 @@
 
     state.rolling = true;
     window.clearTimeout(statusTimer);
-    window.clearTimeout(landTimer);
     state.rollSerial += 1;
     const currentRoll = state.rollSerial;
 
@@ -536,7 +621,7 @@
     setControlsLocked(true);
     elements.rollBtn.classList.add("is-rolling");
     elements.rollLabel.textContent = "Rolling\u2026";
-    elements.diceStage.classList.remove("is-entering", "is-landing");
+    elements.diceStage.classList.remove("is-entering");
     elements.diceStage.classList.add("is-rolling");
     setStatus("rolling", "Rolling");
     elements.total.classList.remove("pop");
@@ -548,26 +633,24 @@
 
     const dice = Array.from(elements.diceSet.querySelectorAll(".die"));
 
-    dice.forEach((die) => {
-      die.classList.remove("is-settled");
-    });
-
     dice.forEach((die, index) => {
       const spins = {
         x: 2 + randomInt(2),
         y: 2 + randomInt(2),
         z: 1 + randomInt(2)
       };
+      const tilt = randomTilt();
 
+      die.dataset.tiltZ = String(tilt);
       die.style.transitionDelay = REDUCED_MOTION.matches
         ? "0ms"
         : `${index * 45}ms`;
-      die.style.transform = dieTransform(values[index], spins, randomTilt());
+      die.style.transform = dieTransform(values[index], spins, tilt);
     });
 
     const settleTime = REDUCED_MOTION.matches
       ? 140
-      : 1020 + (state.dice - 1) * 45;
+      : 1040 + (state.dice - 1) * 45;
 
     window.setTimeout(() => {
       if (currentRoll !== state.rollSerial || !state.rolling) return;
@@ -583,19 +666,8 @@
     setControlsLocked(false);
 
     Array.from(elements.diceSet.querySelectorAll(".die")).forEach((die, index) => {
-      die.querySelectorAll(".die-face").forEach((face) => {
-        face.classList.toggle(
-          "is-showing",
-          Number(face.dataset.value) === values[index]
-        );
-      });
-      die.classList.add("is-settled");
+      updateFaceShading(die, values[index]);
     });
-
-    elements.diceStage.classList.add("is-landing");
-    landTimer = window.setTimeout(() => {
-      elements.diceStage.classList.remove("is-landing");
-    }, 720);
 
     elements.total.textContent = String(total);
     void elements.total.offsetWidth;

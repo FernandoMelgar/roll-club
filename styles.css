@@ -491,7 +491,6 @@ h1 em {
   display: flex;
   align-items: center;
   justify-content: center;
-  perspective: 1500px;
 }
 
 .dice-stage[data-count="1"] {
@@ -564,11 +563,6 @@ h1 em {
   align-items: center;
   justify-content: center;
   gap: var(--die-gap);
-  transform-style: preserve-3d;
-}
-
-.dice-stage.is-rolling .dice-set {
-  animation: tableNudge 400ms ease-in-out infinite;
 }
 
 .die-slot {
@@ -576,51 +570,94 @@ h1 em {
   width: var(--die-size);
   height: var(--die-size);
   flex: 0 0 auto;
-  perspective: calc(var(--die-size) * 7);
-  transform-style: preserve-3d;
+  isolation: isolate;
+  perspective: 1800px;
+  perspective-origin: 50% 45%;
 }
 
+/* Soft light pool gives the dark table enough contrast for the shadow. */
 .die-slot::before {
   content: "";
   position: absolute;
-  left: 8%;
-  right: 8%;
-  bottom: -18%;
+  left: -9%;
+  right: -9%;
+  bottom: -32%;
   z-index: 0;
-  height: 16%;
+  height: 48%;
   border-radius: 50%;
   pointer-events: none;
-  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.65), transparent 70%);
-  filter: blur(4px);
+  background: radial-gradient(
+    ellipse at 50% 46%,
+    rgba(255, 237, 209, 0.16),
+    rgba(255, 237, 209, 0.055) 45%,
+    transparent 72%
+  );
+  filter: blur(14px);
 }
 
-.dice-stage.is-entering .die-slot {
-  animation: dieIn 480ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+.die-shadow {
+  position: absolute;
+  left: 17%;
+  right: 9%;
+  bottom: -31%;
+  z-index: 1;
+  height: 23%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 1;
+  background: radial-gradient(
+    ellipse at 50% 44%,
+    rgba(0, 0, 0, 0.95),
+    rgba(0, 0, 0, 0.5) 42%,
+    transparent 72%
+  );
+  filter: blur(7px);
+  transform-origin: 50% 50%;
+}
+
+.die-hop {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+}
+
+.die-camera {
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  /* Keep this angle in sync with VIEW_ROTATION in script.js. */
+  transform: rotateX(-20deg) rotateY(-18deg);
+}
+
+.dice-stage.is-entering .die-hop {
+  animation: dieIn 540ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   animation-delay: calc(var(--i) * 55ms);
 }
 
-.dice-stage.is-landing .die-slot {
-  animation: dieLand 460ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
-  animation-delay: calc(var(--i) * 35ms);
+.dice-stage.is-entering .die-shadow {
+  animation: shadowIn 540ms ease both;
+  animation-delay: calc(var(--i) * 55ms);
+}
+
+.dice-stage.is-rolling .die-hop {
+  animation: dieTumbleHop 1000ms cubic-bezier(0.22, 0.65, 0.25, 1) both;
+  animation-delay: calc(var(--i) * 45ms);
+}
+
+.dice-stage.is-rolling .die-shadow {
+  animation: shadowTumble 1000ms cubic-bezier(0.22, 0.65, 0.25, 1) both;
+  animation-delay: calc(var(--i) * 45ms);
 }
 
 .die {
   position: relative;
-  z-index: 1;
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
-  transform: rotateX(12deg) rotateY(-16deg) rotateZ(-4deg);
   transition: transform 1s cubic-bezier(0.16, 0.78, 0.19, 1);
   will-change: transform;
-}
-
-.die.is-settled .die-face {
-  visibility: hidden;
-}
-
-.die.is-settled .die-face.is-showing {
-  visibility: visible;
 }
 
 .die-face {
@@ -630,15 +667,39 @@ h1 em {
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
   padding: 13%;
-  border-radius: calc(var(--die-size) * 0.18);
+  overflow: hidden;
   background:
-    radial-gradient(circle at 28% 20%, #fffdf8 0%, rgba(255, 253, 248, 0) 52%),
-    linear-gradient(145deg, #fffaf0 0%, #f1e8d9 72%, #e8ddcc 100%);
+    linear-gradient(145deg, rgba(255, 252, 245, 0.9), rgba(224, 209, 186, 0.95)),
+    #eadfce;
   box-shadow:
-    inset 0 0 0 1px rgba(71, 51, 28, 0.1),
-    inset 0 -8px 15px rgba(101, 74, 43, 0.1),
-    inset 0 8px 12px rgba(255, 255, 255, 0.7);
+    inset 0 0 0 1px rgba(75, 53, 27, 0.13),
+    inset 0 2px 1px rgba(255, 255, 255, 0.4);
   backface-visibility: hidden;
+}
+
+.die-face::before {
+  content: "";
+  position: absolute;
+  inset: 6%;
+  z-index: 0;
+  border-radius: 16%;
+  background:
+    radial-gradient(circle at 28% 18%, #fffdf8 0%, rgba(255, 253, 248, 0) 58%),
+    linear-gradient(145deg, #fffaf0 0%, #f5ebdb 66%, #ebdfcd 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(95, 65, 30, 0.11),
+    inset 0 4px 5px rgba(255, 255, 255, 0.8),
+    inset 0 -9px 14px rgba(99, 71, 38, 0.11);
+}
+
+.die-face::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: #2a1a09;
+  opacity: var(--face-shade, 0.06);
 }
 
 .face-front {
@@ -666,23 +727,28 @@ h1 em {
 }
 
 .pip {
-  width: 66%;
+  position: relative;
+  z-index: 1;
+  width: 58%;
   aspect-ratio: 1;
   place-self: center;
   border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #4b4439 0%, #25211b 46%, #14110e 100%);
+  background: radial-gradient(circle at 35% 28%, #4d463a 0%, #231f19 48%, #0f0d0a 100%);
   box-shadow:
-    inset 0 2px 3px rgba(0, 0, 0, 0.5),
-    0 1px 0 rgba(255, 255, 255, 0.75);
+    inset 0 2px 3px rgba(0, 0, 0, 0.58),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.1),
+    0 1px 0 rgba(255, 255, 255, 0.68),
+    0 2px 4px rgba(76, 50, 24, 0.17);
 }
 
 .die-face[data-value="1"] .pip {
-  width: 92%;
-  background: radial-gradient(circle at 35% 28%, #ff987c 0%, #ef5b36 46%, #bd3515 100%);
+  width: 86%;
+  background: radial-gradient(circle at 34% 26%, #ffac92 0%, #ef5b36 48%, #b62e0f 100%);
   box-shadow:
-    inset 0 2px 3px rgba(91, 18, 0, 0.48),
-    0 1px 0 rgba(255, 255, 255, 0.65),
-    0 0 16px rgba(241, 90, 53, 0.17);
+    inset 0 2px 3px rgba(88, 17, 0, 0.5),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.16),
+    0 1px 0 rgba(255, 255, 255, 0.62),
+    0 0 14px rgba(241, 90, 53, 0.22);
 }
 
 .stage-stamp {
@@ -1354,7 +1420,7 @@ kbd {
 @keyframes dieIn {
   from {
     opacity: 0;
-    transform: translateY(18px) scale(0.88);
+    transform: translateY(calc(var(--die-size) * 0.12)) scale(0.9);
   }
   to {
     opacity: 1;
@@ -1362,28 +1428,65 @@ kbd {
   }
 }
 
-@keyframes dieLand {
+@keyframes shadowIn {
+  from {
+    opacity: 0;
+    transform: scale(0.72);
+  }
+  to {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+}
+
+@keyframes dieTumbleHop {
   0% {
-    transform: translateY(-9px) scale(1.015);
+    transform: translateY(0) scale(1);
+  }
+  15% {
+    transform: translateY(calc(var(--die-size) * -0.12)) scale(1.02);
   }
   55% {
-    transform: translateY(2px) scale(0.995);
+    transform: translateY(calc(var(--die-size) * -0.035)) scale(1);
+  }
+  71% {
+    transform: translateY(0) scale(0.995);
+  }
+  82% {
+    transform: translateY(calc(var(--die-size) * -0.035)) scale(1.005);
+  }
+  93% {
+    transform: translateY(calc(var(--die-size) * 0.004)) scale(0.998);
   }
   100% {
     transform: translateY(0) scale(1);
   }
 }
 
-@keyframes tableNudge {
-  0%,
+@keyframes shadowTumble {
+  0% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  15% {
+    opacity: 0.4;
+    transform: scale(0.72);
+  }
+  55% {
+    opacity: 0.68;
+    transform: scale(0.93);
+  }
+  71% {
+    opacity: 0.88;
+    transform: scale(1.04);
+  }
+  82% {
+    opacity: 0.65;
+    transform: scale(0.9);
+  }
   100% {
-    transform: translate(0, 0) rotate(0);
-  }
-  25% {
-    transform: translate(-2px, 1px) rotate(-0.2deg);
-  }
-  75% {
-    transform: translate(2px, -1px) rotate(0.2deg);
+    opacity: 0.8;
+    transform: scale(1);
   }
 }
 
@@ -1924,27 +2027,27 @@ body.fullscreen-open {
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="1"] {
-    --die-size: clamp(180px, 29vmin, 360px);
+    --die-size: clamp(200px, 33vmin, 400px);
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="2"] {
-    --die-size: clamp(150px, 24vmin, 300px);
+    --die-size: clamp(170px, 27vmin, 330px);
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="3"] {
-    --die-size: clamp(130px, 20vmin, 240px);
+    --die-size: clamp(145px, 23vmin, 270px);
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="4"] {
-    --die-size: clamp(112px, 17vmin, 200px);
+    --die-size: clamp(125px, 19vmin, 230px);
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="5"] {
-    --die-size: clamp(98px, 15vmin, 170px);
+    --die-size: clamp(110px, 16.5vmin, 195px);
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="6"] {
-    --die-size: clamp(88px, 13.5vmin, 150px);
+    --die-size: clamp(95px, 14.5vmin, 165px);
   }
 
   .table-card.is-fullscreen .result-bar {
@@ -2005,27 +2108,27 @@ body.fullscreen-open {
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="1"] {
-    --die-size: clamp(150px, 40vmin, 220px);
+    --die-size: clamp(170px, 52vmin, 260px);
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="2"] {
-    --die-size: clamp(118px, 32vmin, 180px);
+    --die-size: clamp(130px, 38vmin, 210px);
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="3"] {
-    --die-size: clamp(86px, 25vmin, 140px);
+    --die-size: clamp(82px, 26vmin, 160px);
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="4"] {
-    --die-size: clamp(76px, 21vmin, 115px);
+    --die-size: clamp(78px, 22vmin, 130px);
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="5"] {
-    --die-size: clamp(68px, 19vmin, 100px);
+    --die-size: clamp(70px, 20vmin, 115px);
   }
 
   .table-card.is-fullscreen .dice-stage[data-count="6"] {
-    --die-size: clamp(62px, 17vmin, 92px);
+    --die-size: clamp(66px, 19vmin, 105px);
   }
 }
 
@@ -2035,6 +2138,7 @@ body.fullscreen-open {
   *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }

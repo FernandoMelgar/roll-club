@@ -16,7 +16,7 @@ Then visit [http://localhost:8000](http://localhost:8000).
 ## Features
 
 - Roll 1–6 dice with a fair, crypto-backed random number generator
-- Animated 3D dice that land on the correct face
+- True 3D six-face dice with a studio camera angle, face-aware shading, pips, and contact shadows
 - Running total plus per-die results
 - Session history and roll stats, saved in `localStorage`
 - Optional sound effects with a mute toggle
@@ -32,3 +32,5 @@ Then visit [http://localhost:8000](http://localhost:8000).
 - `script.js` — dice logic, sound, history, stats, and persistence
 
 The app loads DM Sans and Instrument Serif from Google Fonts, with system-font fallbacks if you are offline.
+
+When adjusting the dice camera angle, keep `VIEW_ROTATION` in `script.js` in sync with the `.die-camera` transform in `styles.css` so the lighting stays accurate.
