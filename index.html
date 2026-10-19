@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f4eee4">
-  <meta name="description" content="Roll Club is a playful, responsive dice roller. Pick one to six dice, roll, and keep track of your session.">
+  <meta name="description" content="Roll Club is a playful, responsive dice roller with D6 and D20 dice. Pick one to six dice, roll, and keep track of your session.">
   <title>Roll Club — Let luck roll.</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23191612'/%3E%3Ccircle cx='20' cy='20' r='5' fill='%23fdf8ee'/%3E%3Ccircle cx='32' cy='32' r='5' fill='%23f15a35'/%3E%3Ccircle cx='44' cy='44' r='5' fill='%23fdf8ee'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -77,9 +77,9 @@
             </div>
           </div>
 
-          <div class="dice-stage" id="diceStage" data-count="1" aria-hidden="true">
+          <div class="dice-stage" id="diceStage" data-count="1" data-sides="6" aria-hidden="true">
             <div class="dice-set" id="diceSet"></div>
-            <span class="stage-stamp" aria-hidden="true">D6</span>
+            <span class="stage-stamp" id="stageStamp" aria-hidden="true">D6</span>
           </div>
 
           <div class="result-bar">
@@ -91,16 +91,26 @@
           </div>
 
           <div class="board-actions">
-            <div class="dice-control">
-              <span class="control-label" id="diceControlLabel">Dice</span>
-              <div class="stepper" role="group" aria-labelledby="diceControlLabel">
-                <button class="stepper-btn" id="decreaseBtn" type="button" aria-label="Remove a die" disabled>
-                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5.5 10h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                </button>
-                <output class="dice-count" id="diceCount" aria-live="polite" aria-atomic="true"><span id="diceNumber">1</span><span class="dice-word" id="diceWord">die</span></output>
-                <button class="stepper-btn" id="increaseBtn" type="button" aria-label="Add a die">
-                  <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 5.5v9M5.5 10h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-                </button>
+            <div class="board-options">
+              <div class="dice-control">
+                <span class="control-label" id="dieTypeLabel">Die</span>
+                <div class="type-switch" role="group" aria-labelledby="dieTypeLabel">
+                  <button class="type-option is-active" type="button" data-sides="6" aria-pressed="true">D6</button>
+                  <button class="type-option" type="button" data-sides="20" aria-pressed="false">D20</button>
+                </div>
+              </div>
+
+              <div class="dice-control">
+                <span class="control-label" id="diceControlLabel">Dice</span>
+                <div class="stepper" role="group" aria-labelledby="diceControlLabel">
+                  <button class="stepper-btn" id="decreaseBtn" type="button" aria-label="Remove a die" disabled>
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M5.5 10h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  </button>
+                  <output class="dice-count" id="diceCount" aria-live="polite" aria-atomic="true"><span id="diceNumber">1</span><span class="dice-word" id="diceWord">die</span></output>
+                  <button class="stepper-btn" id="increaseBtn" type="button" aria-label="Add a die">
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M10 5.5v9M5.5 10h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -155,10 +165,10 @@
           </section>
 
           <aside class="fact-card" aria-label="Lucky little fact">
-            <span class="fact-number" aria-hidden="true">07</span>
+            <span class="fact-number" id="factNumber" aria-hidden="true">07</span>
             <div>
               <p class="fact-label">Lucky little fact</p>
-              <p>Opposite faces of a standard die always add up to <strong>seven</strong>.</p>
+              <p id="factText">Opposite faces of a standard die always add up to <strong>seven</strong>.</p>
             </div>
           </aside>
         </aside>
